@@ -6,23 +6,21 @@
 #include "vm.h"
 #include "elf.h"
 #include "drivers/timer.h"
+#include "fs/file.h"
 #include "data_structures/bitvector.h"
 
-static uint32_t GLOBAL_PID;
 static pcb** pcb_table;
 static bit_vector* pcb_map;
 
-int process_init()
+void process_init()
 {
   pcb_table = kmalloc(MAX_PROCESSES * sizeof(pcb*));
   pcb_map = make_vector(MAX_PROCESSES);
-  GLOBAL_PID = 0;
-  return 0;
 }
 
 int process_execute(char *name)
 {
-  pcb* pcp_p = __process_create();
+  pcb* pcb_p = __process_create();
   if(!pcb_p) {
     return -1;
   }
@@ -38,6 +36,13 @@ int process_execute(char *name)
   vm_enable_vas(pcb_p->stored_vas);
   pcb_p->current_state = PROCESS_RUNNING;
   process_load_state(pcb_p);
+  return 0;
+}
+
+int process_destroy(pcb* pcb_p){
+  bv_lower(pcb_p->PID, pcb_map);
+  kfree(pcb_p);
+  return 0;
 }
 
 /*Spring 2015 course_os: Sathya Sankaran, Rakan Stanbouly, Jason Sim
@@ -58,7 +63,7 @@ pcb* __process_create()
   }
   //initialize PCB
   pcb_p->stored_vas = vm_new_vas();
-  pcb_p->PID = ++GLOBAL_PID;
+  pcb_p->PID = pcb_index;
   //4-13-15: function pointer should point to main() of file pointer.
   //         TODO: Eventually should be able to pass parameters. Put them on the stack (argv/argc)
   pcb_p->current_state = PROCESS_NEW;
@@ -67,7 +72,6 @@ pcb* __process_create()
   pcb_table[pcb_index] = pcb_p;
   bv_set(pcb_index, pcb_map);
   return pcb_p;
-  }
 }
 
 void __process_elf_init(pcb* pcb_p, char* name) {
@@ -100,7 +104,7 @@ void __process_elf_init(pcb* pcb_p, char* name) {
     counter += 4;
   }
 
-  Elf_Ehdr* success = (Elf_Ehdr*) load_file(pcb_pointer, start);
+  Elf_Ehdr* success = (Elf_Ehdr*) load_file(pcb_p, (uint32_t*) start);
   pcb_p->R15 = success->e_entry;
   for (int i = 0; i < (len / BLOCK_SIZE) + 1; i++)
   {
@@ -174,7 +178,7 @@ void __process_heap_init(pcb* pcb_p)
  */
 void process_save_state(pcb* pcb_p)
 {
-  assert(pcb_p && get_address_of_PCB(pcb_p->PID) > 0 && "Invalid PID in load_process_state");
+  assert(pcb_p);
 
   asm("MOV %0, r0":"=r"(pcb_p->R0)::);
   asm("MOV %0, r1":"=r"(pcb_p->R1)::);

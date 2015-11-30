@@ -160,6 +160,7 @@ void process_init();
 
 //Process API - start process from elf
 int process_execute(char* name);
+int process_destroy(pcb* pcb_p);
 
 pcb* __process_create();
 void __process_elf_init(pcb* pcb_p, char* name);
@@ -167,26 +168,7 @@ void __process_stack_init(pcb* pcb_p);
 void __process_heap_init(pcb* pcb_p);
 
 //Execution functions
-void process_load_state(pcb* pcb_p); __attribute__ ((noreturn))
+void process_load_state(pcb* pcb_p)__attribute__ ((noreturn));
 void process_save_state(pcb* pcb_p);
 
-pcb* process_create(uint32_t* file_p);
-uint32_t process_destroy(int PID);
-void print_PID();
-pcb* get_PCB(uint32_t PID);
-uint32_t free_PCB(pcb* pcb_p);
-uint32_t* get_address_of_PCB(uint32_t PID);
-void execute_process(pcb* pcb_p) __attribute__ ((noreturn));
-void load_process_state(pcb* pcb_p) __attribute__ ((noreturn));
-void save_process_state(pcb* pcb_p);
-uint32_t print_process_state(uint32_t PID);
-void init_proc_heap(pcb* pcb_p);
-void init_proc_stack(pcb * pcb_p);
-
-void setup_process_vas(pcb* pcb_p);
-
-// static void process_exit(process p); //harder because we have to clean up
-// int fork();
-// int process_suspend(process p);
-// int process_resume(process p);
 #endif
