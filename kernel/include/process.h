@@ -154,10 +154,22 @@ typedef struct pcb
 //do we need to know where the data is?
 //output
 //create a corresponding pcb ds
-uint32_t* pcb_table; //Table showing all initialized processes.
-uint32_t* next_free_slot_in_pcb_table();
-void print_pcb_table();
-int init_pcb_table();
+
+//Init process system
+void process_init();
+
+//Process API - start process from elf
+int process_execute(char* name);
+
+pcb* __process_create();
+void __process_elf_init(pcb* pcb_p, char* name);
+void __process_stack_init(pcb* pcb_p);
+void __process_heap_init(pcb* pcb_p);
+
+//Execution functions
+void process_load_state(pcb* pcb_p); __attribute__ ((noreturn))
+void process_save_state(pcb* pcb_p);
+
 pcb* process_create(uint32_t* file_p);
 uint32_t process_destroy(int PID);
 void print_PID();

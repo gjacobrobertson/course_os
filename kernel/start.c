@@ -43,8 +43,6 @@
 
 #define UART0_IMSC (*((volatile uint32_t *)(UART0_ADDRESS + 0x038)))
 
-extern int init_all_processes();
-
 void uart_handler(void *null)
 {
 	print_uart0("uart0!\n");
@@ -105,7 +103,7 @@ void start2(uint32_t *p_bootargs)
 	initialize_timers();
 
 	//assert(1==2 && "Test assert please ignore");
-	init_all_processes();
+  process_init();
 
 	sched_init();
 
